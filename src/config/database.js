@@ -1,7 +1,15 @@
-const { Sequelize } = require('sequelize');
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './database.sqlite'
-});
+const mongoose = require('mongoose');
 
-module.exports = sequelize;
+const connectDB = async () => {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/ticket_system', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB conectado com sucesso!!!');
+  } catch (err) {
+    console.error('Erro ao conectar ao MongoDB:', err, '!');
+  }
+};
+
+module.exports = connectDB;
