@@ -2,7 +2,9 @@ const Ticket = require('../models/Ticket');
 
 exports.createTicket = async (req, res) => {
     try {
-        if (!req.isAdmin) return res.status(403).json({message: 'Acesso negado! Somente admin pode criar ingressos!!'});
+        if (!req.user || !req.user.isAdmin) {
+            return res.status(403).json({message: 'Acesso negado! Somente admin pode criar ingressos!!'});
+        }        
 
         const ticket = await Ticket.create(req.body);
         res.status(201).json(ticket);

@@ -1,8 +1,7 @@
 const express = require('express');
+const router = express.Router();
 const { createPurchase, getUserPurchases, getPurchaseById } = require('../controllers/purchaseController');
 const { verifyToken } = require('../middlewares/auth');
-
-const router = express.Router();
 
 router.post('/', verifyToken, createPurchase);
 router.get('/', verifyToken, getUserPurchases);

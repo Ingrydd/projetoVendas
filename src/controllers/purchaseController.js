@@ -1,8 +1,20 @@
+const mongoose = require('mongoose');
 const Purchase = require('../models/Purchase');
 const Ticket = require('../models/Ticket');
 
-exports.createPurchase = async (req, res) => {
+const createPurchase = async (req, res) => { 
+    let updatedTickets = [];
+
     try {
+        console.log("Usuário autenticado na compra:", req.user);
+
+        if (!req.user || !req.user._id) {
+            return res.status(400).json({ message: "Usuário não autenticado!" });
+        }
+
+        const userId = new mongoose.Types.ObjectId(req.user._id);
+        console.log("ID do usuário convertido:", userId);
+
         const { tickets } = req.body;
         let totalPrice = 0;
 
@@ -11,47 +23,53 @@ exports.createPurchase = async (req, res) => {
             if (!ticket) {
                 return res.status(404).json({ message: `Ingresso com ID ${item.ticket} não encontrado!` });
             }
-            if (ticket.quantity < item.quantity){
+            if (ticket.quantity < item.quantity) {
                 return res.status(400).json({ message: `Estoque insuficiente para ${ticket.name}!` });
             }
 
+            updatedTickets.push({ ticket, originalQuantity: ticket.quantity });
+
             ticket.quantity -= item.quantity;
             await ticket.save();
-            
+
             totalPrice += ticket.price * item.quantity;
         }
 
-        for (let item of tickets) {
-            await Ticket.findByIdAndUpdate(item.ticket, {$inc: {quantity: - item.quantity }});
-        }
-
-        const purchase = await Purchase.create({
-            user: req.userId,
+        const purchase = new Purchase({
+            user: userId, 
             tickets,
             totalPrice
         });
 
+        await purchase.save();
         res.status(201).json(purchase);
     } catch (error) {
-        res.status(500).json({ message: 'Erro ao processar compra', error });
+        console.error("Erro ao processar a compra:", error);
+
+        for (let { ticket, originalQuantity } of updatedTickets) {
+            ticket.quantity = originalQuantity;
+            await ticket.save();
+        }
+
+        res.status(500).json({ message: "Erro ao processar a compra!", error });
     }
 };
 
-exports.getUserPurchases = async (req, res) => {
+const getUserPurchases = async (req, res) => {
     try {
-        const purchases = await Purchase.find({ user: req.userId }).populate('tickets.ticket');
+        const purchases = await Purchase.find({ user: req.user._id }).populate('tickets.ticket');
         res.json(purchases);
     } catch (error) {
         res.status(500).json({ message: 'Erro ao buscar compras', error });
     }
 };
 
-exports.getPurchaseById = async (req, res) => {
+const getPurchaseById = async (req, res) => {
     try {
         const purchase = await Purchase.findById(req.params.id).populate('tickets.ticket');
         if (!purchase) return res.status(404).json({ message: 'Compra não encontrada' });
 
-        if (purchase.user.toString() !== req.userId) {
+        if (purchase.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Acesso negado' });
         }
 
@@ -61,7 +79,8 @@ exports.getPurchaseById = async (req, res) => {
     }
 };
 
-exports.deletePurchase = async (req, res) => {
-    return res.status(403).json({ message: 'Compras não podem ser canceladas após a conclusão!' });
+module.exports = {
+    createPurchase,
+    getUserPurchases,
+    getPurchaseById
 };
-
