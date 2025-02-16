@@ -44,11 +44,18 @@ exports.updateTicket = async (req, res) => {
 
 exports.deleteTicket = async (req, res) => {
     try {
-        if (!req.isAdmin) return res.status(403).json({message: 'Acesso negado!'});
+        if (!req.user.isAdmin) {
+            return res.status(403).json({message: 'Apenas administradores podem deletar ingressos!'});
+        }
 
-        await Ticket.findByIdAndDelete(req.params.id);
-        res.json({message: 'Ingresso deletado com sucesso!!!'});
+        const ticket = await Ticket.findByIdAndDelete(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({message: 'Ingresso não encontrado!'});
+        }
+
+        res.status(200).json({message: 'Ingresso deletado com sucesso!'});
     } catch (error) {
         res.status(500).json({message: 'Erro ao deletar ingresso', error});
     }
 };
+

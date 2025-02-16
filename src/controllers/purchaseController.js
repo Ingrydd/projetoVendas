@@ -14,6 +14,10 @@ exports.createPurchase = async (req, res) => {
             if (ticket.quantity < item.quantity){
                 return res.status(400).json({ message: `Estoque insuficiente para ${ticket.name}!` });
             }
+
+            ticket.quantity -= item.quantity;
+            await ticket.save();
+            
             totalPrice += ticket.price * item.quantity;
         }
 

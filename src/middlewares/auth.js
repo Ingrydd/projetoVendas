@@ -19,4 +19,11 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-module.exports = {generateToken, verifyToken};
+const isAdmin = (req, res, next) => {
+    if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({message: 'Acesso negado! Apenas para administradores!!!'});
+    }
+    next();
+};
+
+module.exports = { generateToken, verifyToken, isAdmin };
