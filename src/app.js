@@ -14,7 +14,7 @@ app.use(express.json());
 // Configuração do Mustache
 app.engine('mustache', mustacheExpress());
 app.set('view engine', 'mustache');
-app.set('views', './views');
+app.set('views', path.join(__dirname, 'views'));
 
 const authRoutes = require('./routes/auth');
 const purchaseRoutes = require('./routes/purchase');
