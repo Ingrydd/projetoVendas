@@ -65,6 +65,6 @@ O backend rodará na porta definida no `.env`.
 - [Dotenv](https://www.npmjs.com/package/dotenv) - Gerenciamento de variáveis de ambiente.
 - [Nodemon](https://www.npmjs.com/package/nodemon) - Monitoramento do servidor em tempo real.
 
-## 👨‍💻 Autores
+## 👨‍💻 Autora
 - Ingryd Belazzi Alves
 

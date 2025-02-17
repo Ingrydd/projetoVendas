@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mustacheExpress = require('mustache-express');
 const connectDB = require('./config/database');
+const path = require('path')
 
 const app = express();
 
